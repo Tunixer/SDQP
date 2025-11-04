@@ -174,6 +174,13 @@ namespace sdqp
                 // stable Householder reflection with pivoting
                 const int id = max_abs<d>(opt);
                 const double xnorm = std::sqrt(sqr_norm<d>(opt));
+                /* Since the reflection vector is [0,0,... ±xnorm,...0,0], if xnorm is too
+                * small, which is often caused by bs[i] in L2 norm minimization problem being
+                * too small, it would cause h in H * x = x + h * (reflx^T * x) * reflx to be
+                * nan/inf. So we skip the reflection, and it will be handled until the other
+                * valid reflecting direction is applied.
+                */
+                if (xnorm < eps) { continue; }
                 cpy<d>(opt, reflx);
                 reflx[id] += opt[id] < 0.0 ? -xnorm : xnorm;
                 const double h = -2.0 / sqr_norm<d>(reflx);
